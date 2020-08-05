@@ -1,0 +1,203 @@
+Clone the django project boilerplate from - 
+https://github.com/shiv11x10/django_project_boilerplate
+
+- add virtual environment.(It can be added easliy on pycharm)
+- install the requirements - pip install -r requirements.txt
+===============================================================
+The project source code is at - 
+https://github.com/shiv11x10/django-ecommerce
+===============================================================
+Steps - to develop the ecommerce platform - 
+
+we can rename the project with command - 
+python manage.py rename demo djecommerce (functionality of core/management)
+===============================================================
+1. we will use django-allauth for authentication functionality - 
+https://django-allauth.readthedocs.io/en/latest/installation.html
+(just follow the instructions on the website)
+we can login using admin user. If not already created use - 
+python manage.py createsuperuser
+
+================================================================
+2. Create models Item, OrderItem and Order to store the data regarding products.
+- then makemigration and migrate
+- register the models to the admin
+- create view item_list in core/views.py and them register that view in the urls seection. Both in core/urls.py and djecommerce/urls.py
+- Now, create a template item_list.html to display the model data
+- Now, we add a bootstrap template for ecommerce website -
+https://mdbootstrap.com/freebies/jquery/e-commerce/
+ Add all the html files in template folder and static files in static_in_env folder.
+Then, reference {% load static %} on the top of home-page and add static to all the links and external references
+Then, extend pages with base.html and include navbar seperately
+
+===================================================================
+We can load pages in navbar by defining paths in urls and creating views to render html. 
+
+================================================================
+Now, we go ahead and define model fields related to product. In the ecommerce template we can observe value like product-category and product color which is created next.
+
+- reference the the product field in the home.html by sending a context and displaying data with a loop
+
+=================================================================
+Let us change our view to class based as it is a lot less code
+make home to HomeView with ListView and product to ItemDetailView with DetailView
+- then change in views.py and change reference in home.html from items to object_list
+- Now, we connect HomeView and ItemDetailView by a slug so that we can output the detail of the product which is selected by the user
+For this, we create a slug model field and migrate. Then, we creaate new function in model Item as get_absolute_url which returns a reverse method(url) to the product.html
+
+Note: slug must be different for each product
+
+====================================================================
+Now, we handle the discount and original price cases with a conditional statement in both home and product html page
+- also, add all the fields that are in the product detail like discount-price and product-description. 
+
+====================================================================
+Now we handle adding item to a cart - 
+1. defination of function add_to_cart() in views.
+2. add quantity, user and ordered field to OrderItem
+3. define add-to-cart in the urls.py
+4. define a method get_add_to_cart_url(self) in Item model
+5. add this method in the product.html add to cart button
+6. define a method remove_from_cart(self) in views
+7. define remove-from-cart in urls.py
+8. define a method get_remove_from_cart_url(self) in Item model
+9. add this method in the product.html Remove from cart button
+
+===================================================================
+Now we add the messages to be displayed while adding and removing from cart.
+1. we use from django.contrib import messages in views.py
+2. add messages to the add_to_cart and remove_from_cart methods
+3. display messages in the base.html
+
+===================================================================
+Improving the UI of application - 
+
+1. Remove the banner and footer button if you don't need them.
+2. Add the cart icon when user is logged in else show the login and signup button. This can done with a conditional statement like if request.user.is_authenticated
+3. make the singup and login look better with django allouth template present in the github link.
+4. download the template folder and add account, openid, socialaccount folders in the templaters folder and add the extra content of the base.html in our own base.html and delete the new one
+5. check the login and and other pages in accounts folder to and add the div and sections to make it consistent with the home.html.
+Just like rows and columns classes in div are added in login.html.
+6. Use django crispy form to make forms more powerfull- https://django-crispy-forms.readthedocs.io/en/latest/install.html
+7. run pip freeze > requirements.txt
+8. After installation go to login.html and load {% crispy_forms_tags %}. Change form.as_p to form|crispy
+9. make all the signup and logout pages look good as well.
+10. To redirect to homepage after login add the attribute LOGIN_REDIRECT_URL = "/" to the settings
+
+Adding pagination - 
+1. In class HomeView in views.py specify the attribute paginate_by = <paginate number>
+2. add the pagination context to the pagination section in home.html
+
+===================================================================
+updating display number in cart in the navigation bar -
+1. create directory templatetags in core app
+2. create cart_template_tags.py in templatetags
+3. add the the instance of cart_template_tag in navbar.html
+
+=================================================================
+Creating an order summary - 
+1. create the view OrderSummaryView which extends View
+2. register it in urls
+3. Create a new html template order_summary.html
+4. Display details in table format which can be found in mdbootstrap.
+5. Add the order context to the table
+6. add login required to the views so that only authenticated users can add and remove items in the cart
+7. add methods to OrderItem model for calculating total price
+8. Add method to Order model for calulating total price for all the items in cart combined
+9. Add plus and minus to all the item quantity
+10. add a method to remove a single item from cart as it was defined before
+11. after the plus minus funtionality we will add a trash can icon to order summary so that we can delete the item at once.
+
+=================================================================
+Create the checkout form - 
+1. Remove the fields which are not required from the from template
+2. Create and define forms.py in core app as we will use django forms.
+3. use django-countries to handle the country field
+https://github.com/SmileyChris/django-countries
+4. define the form context in the CheckoutView in views.py
+5. Add this django form to the checkout.html
+6. Handle the continue to checkout button
+7. Create a model BillingAddress to save the billing details.
+8. Handle the billing request in the post method in views.py
+
+=================================================================
+Handle payments with stripe
+1. create PaymentView in views.py
+2. register it in urls.py
+3. create payment.html. Use stripe docs to get stripe html elements to handle the form - https://stripe.com/docs/stripe-js
+4. Add the ordersummary block from checkout.html to payment.html5.
+5. define post method in PaymentView to handle payment
+6. import stripe configuration from stripe api - 
+https://stripe.com/docs/api/charges/create?lang=python
+7. create a new model Payment to keep track of stripe payments
+8. run pip install stripe and then pip freeze > requirements.txt
+then make the migrations after adding necessary fields in the model
+9. Add errors in try catch from stripe error handling code - 
+https://stripe.com/docs/api/errors/handling
+10. Remove the action="." attribute in form tag in payment.html if we get the error that /payment does not exist after submitting the form
+11. Add conditions in the CheckoutView to redirect to the selected payment option page
+12. Add order context to get method in PaymentView to display order in payment.html
+
+===================================================================
+-Add the image field to Item model to store the product image
+-Add the image in admin and add the context in home.html
+
+NOTE: Appropriate directories along with configuraions in settings must done to display media and static content in django
+
+==================================================================
+Add the coupon code functionality - 
+1. Create the model Coupon
+2. Add it to admin
+3. migrate into database
+4. add method add_coupon to views.py to handle coupon codes
+5. create get_coupon to check if coupon exists.
+6. create a coupon field in Order model.
+7. Add add-coupon to urls.py
+8. Add the order context to checkout view and add the order to the checkout.html
+9. create a form class CouponForm in forms.py and handle the form submission of coupon codes so that it added to the order in checkout.html
+
+=================================================================
+Manage refunds - 
+Product lifecycle is roughly like this - 
+1. Item added to cart
+2. Adding a billing address
+(failed checkout handle)
+3. Payment
+(Preprocessing, processing, packaging etc.)
+4. Being delivered
+5. Refunds
+
+- add feilds to Order model to keep track to product lifectcle - (being_delivered, received, refund_requested, refund_granted)
+- add these feilds to the admin
+- add reference code feild to order model to handle the refund request
+- create method create_ref_code to make random code then add to order when it it payed in the payment view
+- define a RequestRefundView to handle refund and refund method to the forms.py
+- create a Refund model to save refund details
+- add the form to urls.py
+- create request_refund.html to handle refunds
+- update admin to add custom actions by defining our own functions
+
+===================================================================
+Manage addresses by saving when a user opts for save address for next time.
+1. Change BillingAddress model to Address model and add address_type and default feilds
+2. add billing and shipping address to Order model and change the references in views.py and migrate the data
+3. Add the Address model to the admin
+4. Update CheckoutView to handle shipping and billing address
+5. Update Checkoutform to include billing and shipping address
+6. Update checkout.html to handle the process
+
+===================================================================
+Saving credit card information
+- Add uderProfile model to save user information
+- Create a userprofile_receiver to a user instance
+- Update the paymentview
+- Create PaymentForm in forms.py
+
+
+ 
+
+
+
+
+
+ 
